@@ -24,8 +24,8 @@ console.log("程序执行结束!");
 const request = require('request')
 const cheerio = require('cheerio')
 // 需要抓取的网站链接
-const dataUrl = "https://www.lagou.com/";
-
+let dataUrl = "https://www.lagou.com/";
+// 示例
 request(dataUrl, (err, response, html) => {
     if (!err && response.statusCode === 200) {
         const $ = cheerio.load(html);
@@ -50,5 +50,43 @@ request(dataUrl, (err, response, html) => {
             if (err) throw err;
             console.log('success');
         })
+    }
+})
+
+// 我爬我自己公司的网站
+dataUrl = 'https://www.qiumiwu.com/standings';
+request(dataUrl, (err, response, html) => {
+    if (!err && response.statusCode === 200) {
+        const $ = cheerio.load(html);
+        // 将我们需要的信息存储在一个数组中
+        let result = [];
+        const $standingList = $('.bottom-content-list');
+        const $menuList = $('.team-right');
+        let menuArr = [];
+        $menuList.first().find('div').each((i, el) => {
+            menuArr.push($(el).text().trim())
+        })
+        console.log(menuArr)
+        // 遍历
+        $standingList.each((i, el) => {
+            const obj = {};
+            obj.rank = parseInt($(el).find(".bottom-content-list-left__rank").text(), 10);
+            obj.name = $(el).find(".bottom-content-list-left__team__name").text().trim();
+            const $data = $(el).find(".bottom-content-list__right");
+            $data.each(function (index, item) {
+                const str = JSON.stringify($(item).text().replace(/ /g, '')).replace('"', '').split('\\n');
+                console.log(str);
+                // obj.subName.push($(item).text());
+            });
+            result.push(obj);
+        })
+
+        result = JSON.stringify(result);
+        console.log(result)
+        // 写入 json文件
+        // fs.writeFile('data.json', result, 'utf-8', (err) => {
+        //     if (err) throw err;
+        //     console.log('success');
+        // })
     }
 })
