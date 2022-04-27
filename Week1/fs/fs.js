@@ -74,8 +74,11 @@ request(dataUrl, (err, response, html) => {
             obj.name = $(el).find(".bottom-content-list-left__team__name").text().trim();
             const $data = $(el).find(".bottom-content-list__right");
             $data.each(function (index, item) {
-                const str = JSON.stringify($(item).text().replace(/ /g, '')).replace('"', '').split('\\n');
-                console.log(str);
+                const strArr = JSON.stringify($(item).text().replace(/ /g, '')).replace(/"/g, '').split('\\n');
+                const filterArr = strArr.filter((i) => (i && i.trim()))
+                filterArr.forEach((i, key) => {
+                    obj[menuArr[key]] = i;
+                })
                 // obj.subName.push($(item).text());
             });
             result.push(obj);
@@ -84,9 +87,9 @@ request(dataUrl, (err, response, html) => {
         result = JSON.stringify(result);
         console.log(result)
         // 写入 json文件
-        // fs.writeFile('data.json', result, 'utf-8', (err) => {
-        //     if (err) throw err;
-        //     console.log('success');
-        // })
+        fs.writeFile('qiumiwu.json', result, 'utf-8', (err) => {
+            if (err) throw err;
+            console.log('success');
+        })
     }
 })
