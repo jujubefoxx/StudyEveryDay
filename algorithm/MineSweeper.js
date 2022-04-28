@@ -20,3 +20,100 @@
 来源：力扣（LeetCode）
 链接：https://leetcode-cn.com/problems/minesweeper
 著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。*/
+
+const board = [
+    ["E", "E", "E", "E", "E"],
+    ["E", "E", "M", "E", "E"],
+    ["E", "E", "E", "E", "E"],
+    ["E", "E", "E", "E", "E"]
+];
+const click = [3, 0]
+// const board = [["B", "1", "E", "1", "B"], ["B", "1", "M", "1", "B"], ["B", "1", "1", "1", "B"], ["B", "B", "B", "B", "B"]],
+//     click = [3, 0]
+
+// 获取相邻的元素
+const getNeighbors = ([a, b]) => {
+    const [R, L, D, U] = [
+        b !== board[a].length - 1 ? b + 1 : -1,
+        b - 1,
+        a !== board.length - 1 ? a + 1 : -1,
+        a - 1]
+    let boomLength = 0; //计算炸弹数量
+
+    [a, U, D].forEach(
+        (x, key) => {
+            if (x < 0) return
+            [b, L, R].forEach((y, index) => {
+                if (y < 0 || index === 0 && key === 0) return
+                if (board[x][y] === 'M') {
+                    boomLength++
+                }
+            })
+        }
+    )
+    //如果周围没有炸弹则展开递归附近所有没有炸弹的空格子
+    if (boomLength === 0) {
+        board[a][b] = 'B';
+        [a, U, D].forEach(
+            (x, key) => {
+                if (x < 0) return
+                [b, L, R].forEach((y, index) => {
+                    if (y < 0 || index === 0 && key === 0 || board[x][y] !== 'E') return
+                    clickMethod([x, y])
+                })
+            }
+        )
+    } else {
+        board[a][b] = boomLength.toString()
+    }
+}
+
+const clickMethod = ([a, b]) => {
+    switch (board[a][b]) {
+        case 'E':
+            getNeighbors([a, b])
+            break;
+        case 'M':
+            board[a][b] = 'X'
+            break;
+        default:
+    }
+}
+clickMethod(click);
+//上面是自己写的
+//下面的别人写的
+const updateBoard = (board, click) => {
+    const m = board.length;
+    const n = board[0].length;
+    const dx = [1, 1, 1, -1, -1, -1, 0, 0];
+    const dy = [1, 0, -1, 0, 1, -1, 1, -1];
+    const inBound = (x, y) => x >= 0 && x < m && y >= 0 && y < n; // 辅助函数
+
+    const update = (x, y) => {
+        if (!inBound(x, y) || board[x][y] != 'E') return; // 不在界内或不是E，直接返回
+        let count = 0;
+        for (let i = 0; i < 8; i++) { // 统计周围雷的个数
+            const nX = x + dx[i];
+            const nY = y + dy[i];
+            if (inBound(nX, nY) && board[nX][nY] == 'M') {
+                count++;
+            }
+        }
+        if (count == 0) { // 如果周围没有雷，标记B，递归周围的点
+            board[x][y] = 'B';
+            for (let i = 0; i < 8; i++) {
+                update(x + dx[i], y + dy[i]);
+            }
+        } else {
+            board[x][y] = count + '';
+        }
+    };
+
+    const [cX, cY] = click;
+    if (board[cX][cY] === 'M') { // 第一下就踩雷了
+        board[cX][cY] = 'X';
+    } else {
+        update(cX, cY); // 开启dfs
+    }
+    return board;
+};
